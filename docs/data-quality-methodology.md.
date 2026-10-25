@@ -1,0 +1,81 @@
+Data Quality Methodology
+
+Purpose
+
+The workflow checks whether financial totals reconcile for each processed record. It identifies missing or invalid numeric values and differences that exceed the configured tolerance.
+
+Financial Reconciliation Rule
+
+The workflow calculates:
+
+Difference = Gross Cost - Earned Revenue - Net Cost
+
+All amounts are expressed in billions of US dollars.
+
+Validation Rules
+
+1. Missing or Invalid Values
+
+The workflow checks whether gross cost, earned revenue, or net cost is missing, empty, or not a valid finite number.
+
+If any value fails this check, the record receives the status:
+
+MISSING_OR_INVALID_DATA
+
+2. Reconciliation Difference
+
+When all three values are valid, the workflow calculates the difference and rounds it to two decimal places.
+
+The configured tolerance is 0.1 billion.
+
+OK: The absolute difference is less than or equal to 0.1 billion.
+
+REVIEW_REQUIRED: The absolute difference exceeds 0.1 billion.
+
+MISSING_OR_INVALID_DATA: One or more required values are missing or invalid.
+
+Summary Metrics
+
+The workflow produces these summary fields:
+
+total_records_checked — Number of records evaluated.
+
+records_passed — Number of records with status OK.
+
+records_flagged — Number of records that did not receive status OK.
+
+data_quality_status — PASS when no records are flagged; otherwise REVIEW REQUIRED.
+
+flagged_records — Details of records requiring further review, including agency, fiscal year, difference, and validation message.
+
+Interpreting Flags
+
+A flagged record is an investigation prompt, not proof of an error. Differences can arise from source-data issues, rounding, definitions, reporting conventions, or other accounting considerations. The workflow does not independently determine which explanation applies.
+
+Review flagged records against the authoritative source and relevant financial reporting documentation before drawing conclusions.
+
+Scope and Limitations
+
+These checks are basic arithmetic reconciliation controls. They do not constitute a complete financial audit, establish the accuracy of source records, or verify compliance with accounting standards.
+
+Results depend on the records retrieved from NocoDB and the fields supplied to the validation nodes.
+
+Example
+
+Suppose a record contains:
+
+Gross cost: 100.0 billion
+
+Earned revenue: 20.0 billion
+
+Net cost: 79.8 billion
+
+The calculated difference is:
+
+100.0 - 20.0 - 79.8 = 0.2 billion
+
+Since the absolute difference exceeds the configured tolerance of 0.1 billion, the record receives REVIEW_REQUIRED.
+
+Disclaimer
+
+This methodology documents automated checks in a portfolio project. It is not an official US Treasury audit methodology or an assurance opinion.
