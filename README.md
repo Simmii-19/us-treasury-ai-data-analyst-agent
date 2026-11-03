@@ -1,63 +1,132 @@
+
 # US Treasury AI Data Analyst Agent
 
-Automated financial reporting and data-quality monitoring using n8n, NocoDB, JavaScript, QuickChart, and Gmail.
+An automated financial reporting and data-quality monitoring solution built using **n8n, NocoDB, JavaScript, QuickChart, Gmail, and Google Gemini**.
 
-## Overview
+<p align="center">
+  <strong>Financial Analytics | Workflow Automation | Data Validation | Automated Reporting</strong>
+</p>
 
-The US Treasury AI Data Analyst Agent automates the retrieval, analysis, validation, visualization, and reporting of federal agency net cost data.
+---
 
-The workflow filters records for fiscal year 2025, ranks agencies by net cost, checks financial data for potential inconsistencies, generates a chart, and emails a consolidated report.
+## Project Overview
+
+The **US Treasury AI Data Analyst Agent** automates the retrieval, transformation, analysis, validation, visualization, and reporting of federal agency net cost data.
+
+The workflow retrieves FY2025 financial records from NocoDB, ranks agencies and reporting entries by net cost, validates financial calculations, identifies potential discrepancies, generates charts, and delivers consolidated reports through Gmail.
+
+This project demonstrates how data analytics, JavaScript, and workflow automation can be combined to simplify recurring financial reporting and support data-quality monitoring.
+
+## Business Problem
+
+Financial reporting often involves repetitive data retrieval, calculations, ranking, validation, and report preparation.
+
+Manual processes can consume time and make it harder to identify unusual values or potential inconsistencies.
+
+This project addresses these challenges by automating key reporting and financial reconciliation activities.
 
 ## Business Objectives
 
 - Automate recurring financial reporting.
 - Identify the five highest-net-cost agencies or reporting entries.
-- Validate financial relationships between gross cost, earned revenue, and net cost.
+- Validate relationships between gross cost, earned revenue, and net cost.
 - Flag records that require further investigation.
-- Generate a chart for quick comparison.
-- Deliver results through automated email reporting.
+- Generate charts for financial comparisons.
+- Deliver consolidated reports through automated email.
+- Reduce repetitive manual reporting activities.
 
 ## Technology Stack
 
 | Technology | Purpose |
 |---|---|
 | n8n Cloud | Workflow automation and scheduling |
-| NocoDB | Data retrieval |
+| NocoDB | Financial data retrieval |
 | JavaScript | Data transformation, ranking, and validation |
 | QuickChart | Chart generation |
 | Gmail | Automated report delivery |
-| Google Gemini | AI analysis component, subject to quota and availability |
+| Google Gemini | Optional AI analysis component |
 
-## Workflow
+## Workflow Architecture
 
-1. Retrieve Treasury records from NocoDB.
-2. Split records into individual items.
-3. Filter records for fiscal year 2025.
-4. Transform and standardize financial fields.
-5. Rank records by net cost and select the top five.
-6. Validate financial calculations.
-7. Summarize records passed and flagged for review.
-8. Generate a chart of the top-five results.
-9. Combine report data and quality-check results.
-10. Send the report and chart attachment by email.
+The workflow follows an automated reporting pipeline:
 
-## Data Quality Methodology
+1. **Trigger:** Starts manually or through a weekly schedule.
+2. **Data Retrieval:** HTTP Request retrieves financial records from NocoDB.
+3. **Record Expansion:** Split Out converts returned records into individual items.
+4. **Fiscal-Year Filtering:** Selects records for FY2025.
+5. **Field Mapping and Ranking:** JavaScript and Edit Fields prepare financial fields and rank records by net cost.
+6. **Top Five Selection:** Limit retains the five highest-net-cost entries.
+7. **Financial Validation:** JavaScript checks whether gross cost minus earned revenue reconciles with reported net cost.
+8. **Quality Summary:** Counts records that pass validation and records requiring review.
+9. **Chart Generation:** QuickChart generates a chart from the selected records.
+10. **Report Delivery:** Merge nodes combine report and validation results before Gmail sends the email.
 
-The workflow checks the following financial relationship:
+### Workflow Overview
 
-`Calculated Net Cost = Gross Cost - Earned Revenue`
+![n8n Workflow Overview](./docs/images/workflow-overview-png.png)
 
-A record is flagged when the absolute difference between the calculated and reported net cost exceeds the configured tolerance of 0.1 billion.
+## Automated Financial Report
 
-The data-quality summary includes:
+The workflow generates an email report containing the top-five net-cost entries, financial summary, data-quality findings, and chart output.
+
+### Sample Report Screenshots
+
+**1. Sample Financial Report – Part 1**
+
+![Sample Report 1](./docs/images/sample-report-1.png.png)
+
+**2. Sample Financial Report – Part 2**
+
+![Sample Report 2](./docs/images/sample-report-2.png.png)
+
+**3. Sample Financial Report – Part 3**
+
+![Sample Report 3](./docs/images/sample-report-3.png.png)
+
+**4. Sample Financial Report – Part 4**
+
+![Sample Report 4](./docs/images/sample-report-4.png.png)
+
+## Data Quality & Financial Validation
+
+The workflow performs a financial reconciliation check using the following relationship:
+
+```text
+Calculated Net Cost = Gross Cost - Earned Revenue
+```
+
+It calculates the reconciliation difference:
+
+```text
+Difference = Gross Cost - Earned Revenue - Net Cost
+```
+
+All amounts are expressed in billions of US dollars.
+
+### Validation Rules
+
+| Validation Status | Condition |
+|---|---|
+| OK | Absolute difference is less than or equal to 0.1 billion |
+| REVIEW_REQUIRED | Absolute difference exceeds 0.1 billion |
+| MISSING_OR_INVALID_DATA | Required financial values are missing or invalid |
+
+The configured tolerance is **0.1 billion USD**.
+
+### Data Quality Summary
+
+The workflow generates the following metrics:
 
 - Total records checked
 - Records passed
 - Records flagged
-- Difference between calculated and reported net cost
+- Overall data-quality status
+- Reconciliation differences
 - Explanation for each flagged record
 
-A flagged record indicates a potential discrepancy requiring investigation. It does not automatically establish that the source data is incorrect. Accounting definitions, rounding, and reporting adjustments should be reviewed before drawing conclusions.
+### Data Quality Results
+
+![Data Quality Results](./docs/images/data-quality-results.png.png)
 
 ## Example Results
 
@@ -71,50 +140,83 @@ The demonstrated FY2025 report ranked the following entries by net cost:
 | 4 | Interest on Treasury Securities held by the public | 987.1 |
 | 5 | Department of Veterans Affairs | 522.2 |
 
-In one demonstrated run, 25 records were checked, 20 passed validation, and 5 were flagged for review. These figures describe that specific run and may change in future executions.
+### Demonstrated Data Quality Results
 
-## Repository Structure
+| Metric | Result |
+|---|---:|
+| Total Records Checked | 25 |
+| Records Passed | 20 |
+| Records Flagged | 5 |
+| Overall Status | REVIEW REQUIRED |
 
-```text
-us-treasury-ai-data-analyst-agent/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── workflows/
-│   └── treasury_data_analyst_workflow.json
-├── docs/
-│   ├── architecture.md
-│   └── data-quality-methodology.md
-└── screenshots/
-    └── workflow-overview.png
-```
+These figures describe one demonstrated execution. Results may vary in future runs.
 
-This is the intended repository structure. Add the workflow export and supporting files after creating and reviewing them.
+## Key Business Insights
 
-## Setup and Configuration
+The workflow supports analysis of:
+
+- Federal agency net-cost rankings.
+- Differences between calculated and reported net cost.
+- Financial records requiring further investigation.
+- Overall data-quality validation results.
+- Financial comparisons through automated charts.
+
+A flagged record is an investigation prompt, not proof that the source data is incorrect. Accounting definitions, rounding, and reporting conventions should be reviewed before drawing conclusions.
+
+## Documentation
+
+Additional project documentation:
+
+- [System Architecture](./docs/architecture.md)
+- [Data Quality Methodology](./docs/data-quality-methodology.md)
+
+## Setup & Configuration
 
 1. Set up an n8n instance or n8n Cloud account.
 2. Import the sanitized workflow JSON.
 3. Configure NocoDB credentials and the source table.
 4. Configure Gmail and any required Google Gemini credentials.
-5. Verify field mappings, fiscal-year filtering, and validation tolerance.
-6. Configure chart generation and email delivery.
-7. Run a manual test and inspect the execution output.
-8. Confirm that the email contains the report, data-quality summary, flagged records, and chart.
-9. Enable the schedule after verifying the complete workflow.
+5. Verify field mappings and fiscal-year filtering.
+6. Confirm the financial validation formula and tolerance.
+7. Configure QuickChart generation and email delivery.
+8. Run a manual test and inspect the execution output.
+9. Confirm that the email contains the report, validation summary, flagged records, and chart.
+10. Enable scheduled execution after verifying the complete workflow.
 
-Configuration details may vary depending on the exported workflow and connected service versions.
+After importing the workflow, replace placeholders and configure your own credentials.
 
-## Security
+## Security & Data Handling
 
 - Never commit API tokens, passwords, OAuth secrets, or credential exports.
-- Store credentials in n8n credentials or an appropriate secrets manager.
+- Store credentials using n8n credentials or an appropriate secrets manager.
 - Remove sensitive values from workflow JSON before publishing.
 - Redact personal email addresses and private identifiers from screenshots.
 - Do not publish private datasets unless redistribution is authorized.
 - Review all files before committing them to a public repository.
 
-## Limitations and Future Improvements
+## Skills Demonstrated
+
+**Data Analytics**
+- Financial data analysis
+- Data validation and reconciliation
+- Ranking and comparative analysis
+- Data-quality monitoring
+
+**Technical Skills**
+- JavaScript
+- n8n workflow automation
+- NocoDB integration
+- API integration
+- QuickChart visualization
+- Gmail automation
+
+**Business Skills**
+- Automated financial reporting
+- Analytical problem-solving
+- Exception identification
+- Reporting process improvement
+
+## Limitations & Future Improvements
 
 - Improve resilience to AI model quota limits and temporary API failures.
 - Add execution logging and failure notifications.
@@ -126,8 +228,21 @@ Configuration details may vary depending on the exported workflow and connected 
 
 ## Project Status
 
-The core reporting workflow has been demonstrated, including data retrieval, ranking, financial validation, chart generation, and email delivery. Further verification is needed for scheduled execution reliability and AI component behavior.
+The core reporting workflow has been demonstrated, including data retrieval, ranking, financial validation, chart generation, and email delivery.
+
+Further verification is needed for scheduled execution reliability and AI component behavior.
 
 ## Disclaimer
 
 This project is intended for analytical and portfolio purposes. Automated validation supports investigation and reconciliation; it does not replace official financial statements, accounting review, or authoritative Treasury guidance.
+
+---
+
+## Author
+
+**Simran Vishwakarma**
+
+Interested in Data Analytics, Business Intelligence, Financial Analytics, and Workflow Automation.
+
+**GitHub:** [Simmii-19](https://github.com/Simmii-19)
+
